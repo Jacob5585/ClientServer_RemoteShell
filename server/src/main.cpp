@@ -1,10 +1,22 @@
 #include <iostream>
 #include <ostream>
 #include <string>
+#include <csignal>
 #include "../headers/server.h"
 
+static Server* serverPrt = nullptr;
+
+void handleSignal(int signal) {
+    if (signal == SIGINT || signal == SIGTERM) {
+        std::cout <<  "\nCaught signal " << signal << ". Shutting down server" << std::endl;
+
+        if (serverPrt) {
+            serverPrt->stop();
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
-    Server* serverPrt = nullptr;
     uint port = 8080;
 
     if (argc > 1) {
@@ -19,9 +31,13 @@ int main(int argc, char *argv[]) {
     serverPrt = &server;
 
     try {
+        std::signal(SIGINT, handleSignal);
         server.start();
 
-        std::cout << "Server Starting" << std::endl;
+        //Keep server running
+        while (serverPrt->state.load()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
     }
     catch (const std::exception &e) {
         std::cerr << "" << e.what() << std::endl;
