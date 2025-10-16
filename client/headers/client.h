@@ -7,7 +7,7 @@
 
 class Client {
     public:
-        Client(std::string address, uint port);
+        Client(const std::string address, uint port);
         ~Client();
         void stop();
         void start();
@@ -18,7 +18,6 @@ class Client {
         int clientSocket;
         uint port;
         std::string address;
-
 };
 
 #endif //CLIENTSERVER_CLIENT_H

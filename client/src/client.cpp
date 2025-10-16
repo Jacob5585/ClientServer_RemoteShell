@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <cstring>
 
-Client::Client(std::string address, uint port) : address(address), port(port), clientSocket(-1), state(false) {}
+Client::Client(const std::string address, uint port) : address(address), port(port), clientSocket(-1), state(false) {}
 
 Client::~Client() {
     stop();
@@ -36,6 +36,12 @@ void Client::start() {
     serverAddress.sin_port = htons(port);
     serverAddress.sin_addr.s_addr = inet_addr(address.c_str());
 
-    connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
+    if (connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress))) {
+        perror("Connect");
+        exit(EXIT_FAILURE);
+    }
+
+    std::cout << "Connected: " << address.c_str() << ":" << port << std::endl;
+
 }
 
