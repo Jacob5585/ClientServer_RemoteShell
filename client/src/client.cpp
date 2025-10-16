@@ -54,16 +54,10 @@ void Client::start() {
 void Client::control() {
     std::string command;
     while (state) {
-        std::cout << "looping" << std::endl;
 
-        //TODO Call receive function
         receive(command);
         std::cout << "command: " << command << std::endl;
-
-        //TODO Call executeCommand function
         std::string output = executeCommand(command);
-
-        //TODO Call sendOutput function
         sendOutput(clientSocket, output);
     }
 }
