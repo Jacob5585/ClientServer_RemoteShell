@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cstring>
+#include <vector>
 
 Client::Client(const std::string address, uint port) : address(address), port(port), clientSocket(-1), state(false) {}
 
@@ -41,7 +42,56 @@ void Client::start() {
         exit(EXIT_FAILURE);
     }
 
+    state = true;
+
     std::cout << "Connected: " << address.c_str() << ":" << port << std::endl;
+
+    Client::control();
+}
+
+void Client::control() {
+    std::string command;
+    while (state) {
+        std::cout << "looping" << std::endl;
+
+        //TODO Call receive function
+        receive(command);
+        std::cout << "command: " << command << std::endl;
+
+        //TODO Call executeCommand function
+        //TODO Call send function
+    }
+}
+
+std::string Client::executeCommand(std::string &command) {
 
 }
 
+void Client::receive(std::string &message) {
+    // Sets len to the length of the incoming data
+    uint len = 0;
+    if (recv(clientSocket, &len, sizeof(len), 0) <= 0) {
+        std::cerr << "recv failed";
+        return;
+    }
+    len = ntohl(len);
+
+    std::vector<char> buffer(len); // buffer the length of the data
+    ssize_t bytesRead = 0;
+
+    while (bytesRead < len) {
+        // Read the received message into the buffer, and stores the number of bytes read into bytesRead
+        bytesRead = recv(clientSocket, buffer.data() + bytesRead, len - bytesRead, 0);
+
+        if (bytesRead <= 0) {
+            std::cerr << "recv failed";
+            return;
+        }
+    }
+
+    message.assign(buffer.begin(), buffer.end());
+}
+
+void Client::send(std::string &message) {
+
+}

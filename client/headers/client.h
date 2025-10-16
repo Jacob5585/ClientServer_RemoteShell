@@ -18,6 +18,11 @@ class Client {
         int clientSocket;
         uint port;
         std::string address;
+
+        void control();
+        std::string executeCommand(std::string &command);
+        void receive(std::string &message);
+        void send(std::string &message);
 };
 
 #endif //CLIENTSERVER_CLIENT_H
