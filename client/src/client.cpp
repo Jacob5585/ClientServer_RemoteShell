@@ -59,7 +59,8 @@ void Client::control() {
         std::cout << "command: " << command << std::endl;
 
         //TODO Call executeCommand function
-        //TODO Call send function
+        //TODO Call sendOutput function
+        sendOutput(clientSocket, command);
     }
 }
 
@@ -71,7 +72,8 @@ void Client::receive(std::string &message) {
     // Sets len to the length of the incoming data
     uint len = 0;
     if (recv(clientSocket, &len, sizeof(len), 0) <= 0) {
-        std::cerr << "recv failed";
+        // std::cerr << "recv failed";
+        perror("recv");
         return;
     }
     len = ntohl(len);
@@ -84,7 +86,8 @@ void Client::receive(std::string &message) {
         bytesRead = recv(clientSocket, buffer.data() + bytesRead, len - bytesRead, 0);
 
         if (bytesRead <= 0) {
-            std::cerr << "recv failed";
+            // std::cerr << "recv failed";
+            perror("recv");
             return;
         }
     }
@@ -92,6 +95,17 @@ void Client::receive(std::string &message) {
     message.assign(buffer.begin(), buffer.end());
 }
 
-void Client::send(std::string &message) {
+void Client::sendOutput(int serverSocket, std::string &message) {
+    uint len = htonl(message.length());
 
+    if (send(serverSocket, &len, sizeof(len), 0) == -1) {
+        perror("send");
+        return;
+    }
+
+    if (send(serverSocket, message.c_str(), message.length(), 0) == -1) {
+        perror("send");
+        return;
+    }
+    std::cout << "output: " << message << std::endl;
 }

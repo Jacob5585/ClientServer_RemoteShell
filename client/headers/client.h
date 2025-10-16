@@ -22,7 +22,7 @@ class Client {
         void control();
         std::string executeCommand(std::string &command);
         void receive(std::string &message);
-        void send(std::string &message);
+        void sendOutput(int serverSocket, std::string &message);
 };
 
 #endif //CLIENTSERVER_CLIENT_H
