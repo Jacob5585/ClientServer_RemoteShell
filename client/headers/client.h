@@ -20,7 +20,7 @@ class Client {
         std::string address;
 
         void control();
-        std::string executeCommand(std::string &command);
+        std::string executeCommand(const std::string &command);
         void receive(std::string &message);
         void sendOutput(int serverSocket, std::string &message);
 };
