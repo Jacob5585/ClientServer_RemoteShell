@@ -18,7 +18,6 @@ void handleSignal(int signal) {
 
 int main(int argc, char *argv[]) {
     std::string address = "127.0.0.1";
-    // const char* address = "127.0.0.1";
     uint port = 8080;
 
     if (argc > 1) {
@@ -31,7 +30,7 @@ int main(int argc, char *argv[]) {
 
     if (argc > 2) {
         try {
-            port = std::stoi(argv[1]);
+            port = std::stoi(argv[2]);
         } catch (const std::invalid_argument &e) {
             std::cerr << "Invalid argument: " << e.what() << std::endl;
         }
