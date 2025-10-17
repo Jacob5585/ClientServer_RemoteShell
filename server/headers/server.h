@@ -24,6 +24,8 @@ class Server {
 
         void acceptConnections();
         void handleClient(int clientSocket);
+        void sendCommand(int clientSocket, const std::string &command);
+        void recvOutput(int clientSocket, std::string &output);
 };
 
 #endif //Server_H

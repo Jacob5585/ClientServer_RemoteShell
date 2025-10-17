@@ -104,33 +104,50 @@ void Server::acceptConnections() {
 void Server::handleClient(int clientSocket) {
     std::cout << "Client connected" << std::endl;
 
-    std::string message = "ls -la; pwd; whoami";
-    uint len = htonl(message.size());
-    send(clientSocket, &len, sizeof(len), 0);
-    send(clientSocket, message.c_str(), message.length(), 0);
+    sendCommand(clientSocket, "ls -la; pwd; whoami;fakecommand");
 
-    uint len2 = 0;
-    if (recv(clientSocket, &len2, sizeof(len2), 0) <= 0) {
-        // std::cerr << "recv failed";
+    std::string output = "";
+    recvOutput(clientSocket, output);
+    std::cout << output << std::endl;
+}
+
+void Server::sendCommand(int clientSocket, const std::string &command) {
+    uint len = htonl(command.length());
+
+    // Send message length
+    if (send(clientSocket, &len, sizeof(len), 0) == -1) {
+        perror("send");
+        return;
+    }
+
+    // Send message
+    if (send(clientSocket, command.c_str(), command.length(), 0) == -1) {
+        perror("send");
+        return;
+    }
+}
+
+void Server::recvOutput(int clientSocket, std::string &output) {
+    // Sets len to the length of the incoming data
+    uint len = 0;
+    if (recv(clientSocket, &len, sizeof(len), 0) <= 0) {
         perror("recv");
         return;
     }
-    len2 = ntohl(len2);
+    len = ntohl(len);
 
-    std::vector<char> buffer(len2); // buffer the length of the data
+    std::vector<char> buffer(len); // buffer the length of the data
     ssize_t bytesRead = 0;
 
-    while (bytesRead < len2) {
+    while (bytesRead < len) {
         // Read the received message into the buffer, and stores the number of bytes read into bytesRead
-        bytesRead = recv(clientSocket, buffer.data() + bytesRead, len2 - bytesRead, 0);
+        bytesRead = recv(clientSocket, buffer.data() + bytesRead, len - bytesRead, 0);
 
         if (bytesRead <= 0) {
-            // std::cerr << "recv failed";
             perror("recv");
             return;
         }
     }
 
-    message.assign(buffer.begin(), buffer.end());
-    std::cout << "output: " << message << std::endl;
+    output.assign(buffer.begin(), buffer.end());
 }
