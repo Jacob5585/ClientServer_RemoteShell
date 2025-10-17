@@ -32,12 +32,9 @@ int main(int argc, char *argv[]) {
 
     try {
         std::signal(SIGINT, handleSignal);
+        std::signal(SIGTERM, handleSignal);
         server.start();
-
-        //Keep server running
-        while (serverPrt->state.load()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        }
+        server.command();
     }
     catch (const std::exception &e) {
         std::cerr << "" << e.what() << std::endl;

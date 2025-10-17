@@ -27,11 +27,12 @@ void Server::stop() {
         acceptThread.join();
     }
 
-    for (auto& thread : threads) {
-        if (thread.joinable()) {
-            thread.join();
+    for (auto& [socket, info] : clients) {
+        if (info.thread.joinable()) {
+            info.thread.join();
         }
     }
+    clients.clear();
 }
 
 void Server::start() {
@@ -93,7 +94,9 @@ void Server::acceptConnections() {
         }
 
         if (state) {
-            threads.emplace_back(&Server::handleClient, this, clientSocket);
+            std::string clientIP = inet_ntoa(clientAddress.sin_addr);
+            std::lock_guard<std::mutex> lock(clientMutex);
+            clients[clientSocket] = {clientIP};
         }
         else {
             close(clientSocket);;
@@ -101,14 +104,63 @@ void Server::acceptConnections() {
     }
 }
 
-void Server::handleClient(int clientSocket) {
-    std::cout << "Client connected" << std::endl;
+void Server::command() {
+    int targetSocket = -1;
+    std::string line;
 
-    sendCommand(clientSocket, "ls -la; pwd; whoami;fakecommand");
+    while (state) {
+        if (targetSocket != -1) {
+            std::cout << clients[targetSocket].ip << ": ";
+        }
+        else {
+            std::cout << "Server: ";
+        }
 
-    std::string output = "";
-    recvOutput(clientSocket, output);
-    std::cout << output << std::endl;
+        if (!std::getline(std::cin, line)) {
+            break;
+        }
+
+        if (line.rfind("list", 0) == 0) {
+            std::lock_guard<std::mutex> lock(clientMutex);
+
+            if (clients.empty()) {
+                std::cout << "No clients connected" << std::endl;
+            }
+            else {
+                std::cout << "Connected clients:" << std::endl;
+                for (auto& [socket, info] : clients) {
+                    std::cout << "Socket " << socket << " IP " << info.ip << std::endl;
+                }
+            }
+        }
+        else if (line.rfind("select ", 0) == 0) {
+            try {
+                int selectedSocket = std::stoi(line.substr(7)); // convert the inputed socket into a int
+                std::lock_guard<std::mutex> lock(clientMutex);
+
+                if (clients.count(selectedSocket)) {
+                    targetSocket = selectedSocket;
+                    std::cout << "Socket set to " << selectedSocket << std::endl;
+                }
+                else {
+                    std::cout << "Error: " << selectedSocket << " Not found" << std::endl;
+                }
+            }
+            catch (...) {
+            }
+        }
+        else if ((line.rfind("exit", 0) == 0) || line.rfind("quit", 0) == 0) {
+            if (targetSocket != -1) {
+                targetSocket = -1;
+            }
+            else {
+                stop();
+            }
+        }
+        else {
+            std::cout << "Impletement later" << std::endl;
+        }
+    }
 }
 
 void Server::sendCommand(int clientSocket, const std::string &command) {

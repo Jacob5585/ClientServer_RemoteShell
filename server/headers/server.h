@@ -3,9 +3,16 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <sys/socket.h>
 #include <atomic>
 #include <thread>
+#include <mutex>
+
+struct clientInfo {
+    std::string ip;
+    std::thread thread;
+};
 
 class Server {
     public:
@@ -13,6 +20,7 @@ class Server {
         ~Server();
         void stop();
         void start();
+        void command();
 
         std::atomic<bool> state;
 
@@ -20,7 +28,8 @@ class Server {
         int serverSocket;
         uint port;
         std::thread acceptThread; // Thread dedicated to accepting connections
-        std::vector<std::thread> threads; // Vector to store all active threads
+        std::mutex clientMutex;
+        std::map<int, clientInfo> clients;
 
         void acceptConnections();
         void handleClient(int clientSocket);
