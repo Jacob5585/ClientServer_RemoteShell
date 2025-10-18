@@ -116,6 +116,7 @@ void Server::command() {
             std::cout << "Server: ";
         }
 
+        // checks for ctrl-d
         if (!std::getline(std::cin, line)) {
             break;
         }
@@ -147,6 +148,7 @@ void Server::command() {
                 }
             }
             catch (...) {
+                std::cout << "Invalid socket number" << std::endl;
             }
         }
         else if ((line.rfind("exit", 0) == 0) || line.rfind("quit", 0) == 0) {
@@ -158,7 +160,15 @@ void Server::command() {
             }
         }
         else {
-            std::cout << "Impletement later" << std::endl;
+            if (targetSocket == -1) {
+                std::cout << "Invalid input- Use 'list' or 'select <socket number>'" << std::endl;
+                continue;
+            }
+
+            sendCommand(targetSocket, line);
+            std::string output;
+            recvOutput(targetSocket, output);
+            std::cout << output << std::endl;
         }
     }
 }
