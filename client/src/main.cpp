@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
 
     try {
         std::signal(SIGINT, handleSignal);
+        std::signal(SIGTERM, handleSignal);
         client.start();
     }
     catch (const std::exception &e) {
