@@ -27,12 +27,11 @@ class Server {
     private:
         int serverSocket;
         uint port;
-        std::thread acceptThread; // Thread dedicated to accepting connections
+        std::thread acceptThread; // Thread dedicated to accepting connections from cleints
         std::mutex clientMutex;
         std::map<int, clientInfo> clients;
 
         void acceptConnections();
-        void handleClient(int clientSocket);
         void sendCommand(int clientSocket, const std::string &command);
         void recvOutput(int clientSocket, std::string &output);
 };
