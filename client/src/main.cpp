@@ -42,11 +42,6 @@ int main(int argc, char *argv[]) {
     try {
         std::signal(SIGINT, handleSignal);
         client.start();
-
-        //Keep server running
-        // while (clientPrt->state.load()) {
-            // std::chrono::milliseconds(500);
-        // }
     }
     catch (const std::exception &e) {
         std::cerr << "" << e.what() << std::endl;
