@@ -1,3 +1,10 @@
+/*
+Jacob Cormier
+I used TCP over UDP, as with sending commands and output back, I can't lose data during the communication,
+or else the can be incorrect, or output will be incorrect.
+The reliability of TCP is required to ensure that the data communication is correct between the server and client.
+*/
+
 #include "../headers/server.h"
 
 #include <cstring>
